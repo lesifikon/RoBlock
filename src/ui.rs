@@ -12,7 +12,7 @@ use crate::app::App;
 pub fn render(app: &mut App, frame: &mut Frame) {
     let chunks_horizontal = Layout::default()
         .direction(Direction::Horizontal)
-        .vertical_margin(3)
+        // .vertical_margin(2) // 3
         .constraints([
             Constraint::Fill(1),
             Constraint::Length(54),
@@ -47,6 +47,8 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         .split(chunks_horizontal[1]);
 
     let tteexxtt = title_text(title_block2.clone(), "");
+
+    // println!("{}",app.fall_block[2][0]);
 
     for (col_idx, col_rect) in col.iter().enumerate() {
     let row = Layout::default()

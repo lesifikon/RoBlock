@@ -11,6 +11,7 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     app.spawn_block();
     app.paint_fall_block();
     // app.down();
+    app.check_down();
     loop {
         // terminal.draw(|f| render(&mut app, f))?;
         // if crossterm::event::read()?.is_key_press() {
@@ -33,7 +34,15 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
 
         // 3. Логика игры (срабатывает каждые ~500 мс, если не было нажатий, 
         // либо сразу после обработки нажатия клавиши)
-        app.down();
+        if  app.matrix[19][5] != 1 && app.fall_block[2][0] != 19{
+            app.down();
+            app.left();
+        } else {
+            app.spawn_block();
+            app.paint_fall_block();
+        }
+        app.check_down();
+
 
     }
 }
@@ -66,6 +75,18 @@ impl App {
         }
     }
 
+    pub fn erase_fall_block_left(&mut self) {
+        for [x, y] in self.fall_block.iter() {
+            self.matrix[*x as usize][*y as usize + 1] = 0;
+        }
+    }
+
+    // pub fn erase_fall_block(&mut self) {
+    //     for [x, y] in self.fall_block.iter() {
+    //         self.matrix[*x as usize][*y as usize] = 0;
+    //     }
+    // }
+
 
     pub fn spawn_block(&mut self) {
         self.fall_block = [
@@ -81,6 +102,36 @@ impl App {
         for i in 0..self.fall_block.len() {
             let number = self.fall_block[i][0];
             self.fall_block[i][0] = number + 1
+        }
+        self.paint_fall_block();
+    }
+
+    pub fn check_down(&mut self) {
+        // for i in 0..self.matrix.len() {
+        //     for j in 0..self.matrix[i].len() {
+        //         if i == 19 {
+        //             // блок коснулся дна
+        //             togo!();
+        //         }
+        //         for [x, y] in self.fall_block.iter() {
+        //             if 
+        //         }
+        //     }
+        // }
+        for row in 0..self.fall_block.len() {
+            if self.fall_block[row][0] == (self.matrix.len() - 1) as u8 {
+                println!("упаф");
+            }
+            // проверить не коснулся ли блок стоячей блок
+        }
+    }
+
+    //move
+    pub fn left(&mut self) {
+        self.erase_fall_block_left();
+        for i in 0..self.fall_block.len() {
+            let number = self.fall_block[i][1];
+            self.fall_block[i][1] = number - 1
         }
         self.paint_fall_block();
     }

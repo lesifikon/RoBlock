@@ -12,10 +12,14 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     app.paint_fall_block();
 
     let mut last_tick = Instant::now();
-    let tick_rate = Duration::from_millis(500);
+    let tick_rate = Duration::from_millis(1000);
 
     loop {
+        // урисую падающий блок
+
         terminal.draw(|f| render(&mut app, f))?;
+
+        app.erase_fall_block();
 
         if event::poll(Duration::from_millis(500))? {
             if let Event::Key(key) = event::read()? {
@@ -23,8 +27,9 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
                     KeyCode::Esc | KeyCode::Char('q') => {
                         break Ok(());
                     },
-                    KeyCode::Char('a') | KeyCode::Left => app.left(),
-                    KeyCode::Char('d') | KeyCode::Right => app.right(),
+                    KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Left => app.left(),
+                    KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Down => { if app.block_falling() {app.down(); last_tick = Instant::now();}},
+                    KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Right => app.right(),
                     _ => {}
                 }
             }
@@ -35,12 +40,14 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
             if app.block_falling() {
                 app.down();
             } else {
+                app.paint_fall_block();
                 app.spawn_block();
             }
-            last_tick = Instant::now(); 
+            last_tick = Instant::now();
         }
 
-
+        // рисую падающий блок
+        app.paint_fall_block();
     }
 }
 
@@ -81,49 +88,41 @@ impl App {
         ];
     }
 
-    pub fn down(&mut self) {
-        self.erase_fall_block();
-        for i in 0..self.fall_block.len() {
-            let number = self.fall_block[i][0];
-            self.fall_block[i][0] = number + 1
-        }
-        self.paint_fall_block();
-    }
-
     pub fn block_falling(&mut self) -> bool {
-        self.erase_fall_block();
         for row in 0..self.fall_block.len() {
             if self.fall_block[row][0] == (self.matrix.len() - 1) as u8 {
-                self.paint_fall_block();
                 return false;
             }
             let next_y = (self.fall_block[row][0] + 1) as usize;
             if self.matrix[next_y][self.fall_block[row][1] as usize] != 0 {
-                self.paint_fall_block();
                 return false;
             }
         }
-        self.paint_fall_block();
         true
     }
 
     //move
-    pub fn left(&mut self) {
-        self.erase_fall_block();
+    
+    pub fn handling_move(&mut self, x:u8 , run: i8) {
         for i in 0..self.fall_block.len() {
-            let number = self.fall_block[i][1];
-            self.fall_block[i][1] = number - 1
+            self.fall_block[i][x as usize] = ((self.fall_block[i][x as usize]) as i8 + run) as u8
         }
-        self.paint_fall_block();
+    }
+
+    pub fn down(&mut self) {
+        self.handling_move(0, 1)
+    }
+
+    pub fn left(&mut self) {
+        self.handling_move(1, -1)
     }
 
     pub fn right(&mut self) {
-        self.erase_fall_block();
-        for i in 0..self.fall_block.len() {
-            let number = self.fall_block[i][1];
-            self.fall_block[i][1] = number + 1
-        }
-        self.paint_fall_block();
+        self.handling_move(1, 1)
+    }
+
+    pub fn up(&mut self) {
+        self.handling_move(0, -1)
     }
 
 

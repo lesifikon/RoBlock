@@ -12,7 +12,7 @@ use crate::app::App;
 pub fn render(app: &mut App, frame: &mut Frame) {
     let chunks_horizontal = Layout::default()
         .direction(Direction::Horizontal)
-        // .vertical_margin(2) // 3
+        .vertical_margin(3) // 3
         .constraints([
             Constraint::Fill(1),
             Constraint::Length(54),

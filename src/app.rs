@@ -1,5 +1,5 @@
 use crate::ui::render;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use crossterm::event::{self, Event, KeyCode};
 
 use ratatui::DefaultTerminal;
@@ -10,38 +10,35 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     let mut app = App::new();
     app.spawn_block();
     app.paint_fall_block();
-    // app.down();
-    app.check_down();
+
+    let mut last_tick = Instant::now();
+    let tick_rate = Duration::from_millis(500);
+
     loop {
-        // terminal.draw(|f| render(&mut app, f))?;
-        // if crossterm::event::read()?.is_key_press() {
-        //     break Ok(());
-        // }
         terminal.draw(|f| render(&mut app, f))?;
 
-        // 2. Проверяем, нажал ли пользователь что-то (ждем максимум 500 мс)
-        // Это заменяет thread::sleep и одновременно обрабатывает ввод!
-        if event::poll(Duration::from_millis(1000))? {
-            // Если событие есть, читаем его (теперь read() сработает мгновенно)
+        if event::poll(Duration::from_millis(500))? {
             if let Event::Key(key) = event::read()? {
-                // Проверяем конкретную клавишу, например, Esc или 'q' для выхода
-                if key.code == KeyCode::Esc || key.code == KeyCode::Char('q') {
-                    break Ok(());
+                match key.code {
+                    KeyCode::Esc | KeyCode::Char('q') => {
+                        break Ok(());
+                    },
+                    KeyCode::Char('a') | KeyCode::Left => app.left(),
+                    KeyCode::Char('d') | KeyCode::Right => app.right(),
+                    _ => {}
                 }
- 
             }
         }
 
-        // 3. Логика игры (срабатывает каждые ~500 мс, если не было нажатий, 
-        // либо сразу после обработки нажатия клавиши)
-        if  app.matrix[19][5] != 1 && app.fall_block[2][0] != 19{
-            app.down();
-            app.left();
-        } else {
-            app.spawn_block();
-            app.paint_fall_block();
+        // падает блок через каждые 500мс
+        if last_tick.elapsed() >= tick_rate {
+            if app.block_falling() {
+                app.down();
+            } else {
+                app.spawn_block();
+            }
+            last_tick = Instant::now(); 
         }
-        app.check_down();
 
 
     }
@@ -75,19 +72,6 @@ impl App {
         }
     }
 
-    pub fn erase_fall_block_left(&mut self) {
-        for [x, y] in self.fall_block.iter() {
-            self.matrix[*x as usize][*y as usize + 1] = 0;
-        }
-    }
-
-    // pub fn erase_fall_block(&mut self) {
-    //     for [x, y] in self.fall_block.iter() {
-    //         self.matrix[*x as usize][*y as usize] = 0;
-    //     }
-    // }
-
-
     pub fn spawn_block(&mut self) {
         self.fall_block = [
             [1, 3],
@@ -106,34 +90,41 @@ impl App {
         self.paint_fall_block();
     }
 
-    pub fn check_down(&mut self) {
-        // for i in 0..self.matrix.len() {
-        //     for j in 0..self.matrix[i].len() {
-        //         if i == 19 {
-        //             // блок коснулся дна
-        //             togo!();
-        //         }
-        //         for [x, y] in self.fall_block.iter() {
-        //             if 
-        //         }
-        //     }
-        // }
+    pub fn block_falling(&mut self) -> bool {
+        self.erase_fall_block();
         for row in 0..self.fall_block.len() {
             if self.fall_block[row][0] == (self.matrix.len() - 1) as u8 {
-                println!("упаф");
+                self.paint_fall_block();
+                return false;
             }
-            // проверить не коснулся ли блок стоячей блок
+            let next_y = (self.fall_block[row][0] + 1) as usize;
+            if self.matrix[next_y][self.fall_block[row][1] as usize] != 0 {
+                self.paint_fall_block();
+                return false;
+            }
         }
+        self.paint_fall_block();
+        true
     }
 
     //move
     pub fn left(&mut self) {
-        self.erase_fall_block_left();
+        self.erase_fall_block();
         for i in 0..self.fall_block.len() {
             let number = self.fall_block[i][1];
             self.fall_block[i][1] = number - 1
         }
         self.paint_fall_block();
     }
+
+    pub fn right(&mut self) {
+        self.erase_fall_block();
+        for i in 0..self.fall_block.len() {
+            let number = self.fall_block[i][1];
+            self.fall_block[i][1] = number + 1
+        }
+        self.paint_fall_block();
+    }
+
 
 }

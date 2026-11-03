@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+rand = "0.10.3"
 crossterm = "0.29"
 color-eyre = "0.6.5"
 tui-big-text = "0.8"

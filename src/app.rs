@@ -9,11 +9,9 @@ use ratatui::DefaultTerminal;
 
 pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     let mut app = App::new();
+    app.figures_generation();
     app.spawn_block();
     app.paint_fall_block();
-    app.figures_generation();
-
-    app.handling_bag();
 
     let mut last_tick = Instant::now();
     let tick_rate = Duration::from_millis(1000);
@@ -136,24 +134,35 @@ impl App {
         ]
     }
 
-    pub fn handling_bag(&mut self) {
+    pub fn handling_bag(&mut self) -> [(i8, i8); 4] {
         if self.bag_figures.is_empty() {
+            self.figures_generation();
             for i in 0..self.list_figures.len() {
                 self.bag_figures.push(self.list_figures[i][0]);
             }
             let mut rng = rand::rng();
-            self.list_figures.shuffle(&mut rng);
-            println!("{:?}", self.list_figures);
+            self.bag_figures.shuffle(&mut rng);
         }
+        let mut current_figure = self.bag_figures.remove(0);
+        current_figure
     }
 
     pub fn spawn_block(&mut self) {
         self.fall_block = [
-            [1, 3],
-            [1, 4],
             [1, 5],
-            [0, 5],
+            [1, 5],
+            [1, 5],
+            [1, 5],
         ];
+        // нуливые блоки: [0][4],[0][5],[0][6],[0][7],
+        let block = self.handling_bag();
+        for (i,&(x, y)) in block.iter().enumerate() {
+            let y1 = self.fall_block[i as usize][0] as i8;
+            let x1 = self.fall_block[i as usize][1] as i8;
+
+            self.fall_block[i as usize] = [(y1 + y) as u8, (x1 + x) as u8];
+        }
+
     }
 
     pub fn possible_action(&mut self, axis: u8, run: i8) -> bool {

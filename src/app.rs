@@ -26,12 +26,15 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
         if event::poll(Duration::from_millis(500))? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
-                    KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                    KeyCode::Esc => {
                         break Ok(());
                     },
                     KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Left => app.left(),
                     KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Down => {app.down(); last_tick = Instant::now();},
                     KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Right => app.right(),
+                    // вращение
+                    KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Left => app.spin_left(),
+                    KeyCode::Char('e') | KeyCode::Char('E') | KeyCode::Left => app.spin_right(),
                     _ => {}
                 }
             }
@@ -57,7 +60,11 @@ pub struct App {
     // фигуры
     pub list_figures: [[[(i8, i8); 4]; 4]; 7],
     // мешок фигур
-    pub bag_figures: Vec<[(i8, i8); 4]>,
+    pub bag_figures: Vec<[[(i8, i8); 4]; 4]>,
+    // текущая фигура
+    pub current_figure: [[(i8, i8); 4]; 4],
+    // поворот фигуры
+    pub turn: i8,
     // очки
     pub glasses: u64,
 }
@@ -134,29 +141,30 @@ impl App {
         ]
     }
 
-    pub fn handling_bag(&mut self) -> [(i8, i8); 4] {
+    pub fn handling_bag(&mut self) -> [[(i8, i8); 4]; 4] {
         if self.bag_figures.is_empty() {
             self.figures_generation();
             for i in 0..self.list_figures.len() {
-                self.bag_figures.push(self.list_figures[i][0]);
+                self.bag_figures.push(self.list_figures[i]);
             }
             let mut rng = rand::rng();
             self.bag_figures.shuffle(&mut rng);
         }
         let mut current_figure = self.bag_figures.remove(0);
+        self.current_figure = current_figure;
         current_figure
     }
 
     pub fn spawn_block(&mut self) {
+        self.turn = 0;
         self.fall_block = [
             [1, 5],
             [1, 5],
             [1, 5],
             [1, 5],
         ];
-        // нуливые блоки: [0][4],[0][5],[0][6],[0][7],
         let block = self.handling_bag();
-        for (i,&(x, y)) in block.iter().enumerate() {
+        for (i,&(x, y)) in block[0].iter().enumerate() {
             let y1 = self.fall_block[i as usize][0] as i8;
             let x1 = self.fall_block[i as usize][1] as i8;
 
@@ -195,6 +203,56 @@ impl App {
     }
 
     //move
+
+    pub fn rotation(&mut self, spin: i8) {
+        let center_y = self.fall_block[1][0] as i8;
+        let center_x = self.fall_block[1][1] as i8;
+
+        let old_turn = self.turn;
+
+        self.turn = self.turn + spin;
+        if self.turn > 3 {
+            self.turn = 0;
+        } else if self.turn < 0 {
+            self.turn = 3;
+        }
+
+        let mut new_positions = [[0u8; 2]; 4];
+        let mut can_rotate = true;
+
+        let block_rotation = self.current_figure[self.turn as usize];
+
+        for (i, &(x, y)) in block_rotation.iter().enumerate() {
+            let y1 = center_y + y;
+            let x1 = center_x + x;
+
+            if y1 < 0 || y1 >= 20 || x1 < 0 || x1 >= 10 {
+                can_rotate = false;
+                break;
+            }
+
+            if self.matrix[y1 as usize][x1 as usize] != 0 {
+                can_rotate = false;
+                break;
+            }
+
+            new_positions[i] = [y1 as u8, x1 as u8];
+        }
+
+        if can_rotate {
+            self.fall_block = new_positions;
+        } else {
+            self.turn = old_turn;
+        }
+    }
+
+    pub fn spin_left(&mut self) {
+        self.rotation(1);
+    }
+
+    pub fn spin_right(&mut self) {
+        self.rotation(-1);
+    }
 
     pub fn handling_move(&mut self, axis:u8 , run: i8) {
         for i in 0..self.fall_block.len() {

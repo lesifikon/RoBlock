@@ -32,9 +32,13 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
                     KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Left => app.left(),
                     KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Down => {app.down(); last_tick = Instant::now();},
                     KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Right => app.right(),
+                    KeyCode::Char(' ') => app.space_bar(),
                     // вращение
-                    KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Left => app.spin_left(),
-                    KeyCode::Char('e') | KeyCode::Char('E') | KeyCode::Left => app.spin_right(),
+                    KeyCode::Char('q') | KeyCode::Char('Q') => app.spin_left(),
+                    KeyCode::Char('e') | KeyCode::Char('E') => app.spin_right(),
+                    // тесты
+                    // KeyCode::Char('t') | KeyCode::Char('T') => app.full_row(),
+
                     _ => {}
                 }
             }
@@ -45,6 +49,9 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
             app.down();
             last_tick = Instant::now();
         }
+
+        // проверить не заполнен ляд
+        app.full_row();
 
         // рисую падающий блок
         app.paint_fall_block();
@@ -285,5 +292,35 @@ impl App {
         self.handling_move(0, -1)
     }
 
+    pub fn space_bar(&mut self) {
+        while self.block_falling() {
+            self.handling_move(0, 1);
+        }
+        self.paint_fall_block();
+        self.spawn_block();
+    }
 
+    // очки
+    pub fn full_row(&mut self) {
+        for _ in 0..12 {
+            let mut number = Vec::new();
+            for (n, row) in self.matrix.iter().enumerate() {
+                let all_positive = row.iter().all(|&x| x > 0);
+                if all_positive {
+                    number.push(n);
+                }
+            }
+            loop {
+                if number.is_empty() {
+                    break;
+                }
+                while let Some(mut i) = number.pop() {
+                    while i > 0 {
+                        self.matrix[i] = self.matrix[i - 1];
+                        i -= 1;
+                    }
+                }
+            }
+        }
+    }
 }

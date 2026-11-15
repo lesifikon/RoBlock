@@ -1,9 +1,8 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
-    symbols::border,
+    text::{Line, Text},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
 
@@ -46,7 +45,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         ])
         .split(chunks_horizontal[1]);
 
-    let tteexxtt = title_text(title_block2.clone(), "");
+    // let tteexxtt = title_text(title_block2.clone(), "");
 
     // println!("{}",app.fall_block[2][0]);
 

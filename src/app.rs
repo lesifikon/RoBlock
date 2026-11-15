@@ -1,7 +1,7 @@
 use crate::ui::render;
 use std::time::{Duration, Instant};
 use crossterm::event::{self, Event, KeyCode};
-use rand::seq::SliceRandom;
+// use rand::seq::SliceRandom;
 use rand::RngExt;
 
 use ratatui::DefaultTerminal;
@@ -51,8 +51,6 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
             last_tick = Instant::now();
         }
 
-        // проверить не заполнен ляд
-        app.full_row();
 
         // рисую падающий блок
         app.paint_fall_block();
@@ -80,7 +78,7 @@ pub struct App {
     // поворот фигуры
     pub turn: i8,
     // очки
-    pub glasses: u64,
+    pub glasses: u32,
 }
 
 impl App {
@@ -178,14 +176,16 @@ impl App {
                 self.color_arr.swap(i, j);
             }
         }
-        let mut current_figure = self.bag_figures.remove(0);
-        let mut current_color = self.color_arr.remove(0);
+        let current_figure = self.bag_figures.remove(0);
+        let current_color = self.color_arr.remove(0);
         self.current_figure = current_figure;
         self.color_block = current_color;
         current_figure
     }
 
     pub fn spawn_block(&mut self) {
+        // проверить не заполнен ляд
+        self.full_row();
         self.turn = 0;
         self.fall_block = [
             [1, 5],
@@ -325,14 +325,15 @@ impl App {
 
     // очки
     pub fn full_row(&mut self) {
-        for _ in 0..12 {
-            let mut number = Vec::new();
-            for (n, row) in self.matrix.iter().enumerate() {
-                let all_positive = row.iter().all(|&x| x > 0);
-                if all_positive {
-                    number.push(n);
-                }
+        let mut number = Vec::new();
+        for (n, row) in self.matrix.iter().enumerate() {
+            let all_positive = row.iter().all(|&x| x > 0);
+            if all_positive {
+                number.push(n);
             }
+        }
+        self.give_glasses(number.len());
+        for _ in 0..12 {
             loop {
                 if number.is_empty() {
                     break;
@@ -345,5 +346,19 @@ impl App {
                 }
             }
         }
+    }
+
+    pub fn give_glasses(&mut self, number_row: usize) {
+        let mut glasses = 0;
+        match number_row {
+            1 => glasses = 150,
+            2 => glasses = 150 * 3,
+            3 => glasses = 150 * 3 * 6,
+            4 => glasses = 150 * 3 * 6 * 10,
+            0 => (),
+            _ => (),
+        };
+        println!("{}", self.glasses);
+        self.glasses = self.glasses + glasses;
     }
 }

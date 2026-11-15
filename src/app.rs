@@ -1,7 +1,8 @@
 use crate::ui::render;
 use std::time::{Duration, Instant};
 use crossterm::event::{self, Event, KeyCode};
-use rand::seq::SliceRandom; 
+use rand::seq::SliceRandom;
+use rand::RngExt;
 
 use ratatui::DefaultTerminal;
 
@@ -70,6 +71,9 @@ pub struct App {
     pub bag_figures: Vec<[[(i8, i8); 4]; 4]>,
     // текущая фигура
     pub current_figure: [[(i8, i8); 4]; 4],
+    // цвет фигур
+    pub color_arr: Vec<u8>,
+    pub color_block: u8,
     // поворот фигуры
     pub turn: i8,
     // очки
@@ -84,7 +88,7 @@ impl App {
 
     pub fn paint_fall_block(&mut self) {
         for [x, y] in self.fall_block.iter() {
-            self.matrix[*x as usize][*y as usize] = 1;
+            self.matrix[*x as usize][*y as usize] = self.color_block;
         }
     }
 
@@ -151,14 +155,21 @@ impl App {
     pub fn handling_bag(&mut self) -> [[(i8, i8); 4]; 4] {
         if self.bag_figures.is_empty() {
             self.figures_generation();
-            for i in 0..self.list_figures.len() {
+            for (n, i) in (0..self.list_figures.len()).enumerate() {
+                self.color_arr.push((n + 1) as u8);
                 self.bag_figures.push(self.list_figures[i]);
             }
             let mut rng = rand::rng();
-            self.bag_figures.shuffle(&mut rng);
+            for i in (1..self.bag_figures.len()).rev() {
+                let j = rng.random_range(0..=i);
+                self.bag_figures.swap(i, j);
+                self.color_arr.swap(i, j);
+            }
         }
         let mut current_figure = self.bag_figures.remove(0);
+        let mut current_color = self.color_arr.remove(0);
         self.current_figure = current_figure;
+        self.color_block = current_color;
         current_figure
     }
 

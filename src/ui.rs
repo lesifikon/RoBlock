@@ -58,10 +58,19 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     for (row_idx, row_rect) in row.iter().enumerate() {
         // let color = colors[(row_idx + col_idx) % colors.len()];
-        let color = if app.matrix[row_idx][col_idx] == 0 { Color::Green } else { Color::Yellow };
+        let color = match app.matrix[row_idx][col_idx] {
+                1 => { Color::Red },
+                2 => { Color::Blue },
+                3 => { Color::Green },
+                4 => { Color::Cyan },
+                5 => { Color::Yellow},
+                6 => { Color::White },
+                7 => { Color::Magenta },
+                _ => { Color::Black },
+            };
         let block;
 
-        if app.matrix[row_idx][col_idx] == 1 {
+        if app.matrix[row_idx][col_idx] > 0 {
             block = Block::default().style(Style::default().bg(color));
         } else {
             block = Block::default().style(Style::default());

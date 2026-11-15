@@ -17,7 +17,7 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     let mut last_tick = Instant::now();
     let tick_rate = Duration::from_millis(1000);
 
-    loop {
+    while !app.game_over {
         // урисую падающий блок
 
         terminal.draw(|f| render(&mut app, f))?;
@@ -28,7 +28,7 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Esc => {
-                        break Ok(());
+                        app.loss();
                     },
                     KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Left => app.left(),
                     KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Down => {app.down(); last_tick = Instant::now();},
@@ -57,10 +57,13 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
         // рисую падающий блок
         app.paint_fall_block();
     }
+    Ok(())
 }
 
 #[derive(Debug, Default)]
 pub struct App {
+    // проигрыш
+    pub game_over: bool,
     // карта
     pub matrix: [[u8; 10]; 20],
     // падающий блок
@@ -86,9 +89,18 @@ impl App {
         Self::default()
     }
 
+    pub fn loss(&mut self) {
+        self.game_over = true;
+    }
+
     pub fn paint_fall_block(&mut self) {
         for [x, y] in self.fall_block.iter() {
-            self.matrix[*x as usize][*y as usize] = self.color_block;
+            if self.matrix[*x as usize][*y as usize] == 0 {
+                self.matrix[*x as usize][*y as usize] = self.color_block;
+            } else {
+                self.game_over = true;
+
+            }
         }
     }
 

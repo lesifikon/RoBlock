@@ -78,7 +78,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     }
 }
     let meni_title = title_text(title_block, "");
-    let text = title_text(title_block1, "выфвфывфвфывфы");
+    let text = title_text(title_block1, app.glasses.to_string());
     let textt = title_text(title_block2, "выфвфыв");
 
 

@@ -358,7 +358,6 @@ impl App {
             0 => (),
             _ => (),
         };
-        println!("{}", self.glasses);
         self.glasses = self.glasses + glasses;
     }
 }

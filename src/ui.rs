@@ -41,7 +41,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         .margin(2)
         // .vertical_margin(5)
         .constraints([
-            Constraint::Fill(1); 10
+            Constraint::Length(5); 10
         ])
         .split(chunks_horizontal[1]);
 

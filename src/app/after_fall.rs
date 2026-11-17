@@ -39,9 +39,8 @@ impl App {
                 1 => glasses =glasses * 3,
                 2 => glasses = glasses * 6,
                 3 => glasses = glasses * 10,
-                _ => glasses = glasses,
+                _ => (),
             };
-            println!("{}", glasses);
         }
 
         self.glasses = self.glasses + glasses;

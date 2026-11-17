@@ -3,7 +3,6 @@ use super::App;
 use crate::ui::render;
 use std::time::{Duration, Instant};
 use crossterm::event::{self, Event, KeyCode};
-// use rand::seq::SliceRandom;
 
 use ratatui::DefaultTerminal;
 

@@ -24,8 +24,30 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+pub struct GameConfig {
+    pub score_row1: u32,
+    pub score_row2: u32,
+    pub score_row3: u32,
+    pub score_row4: u32,
+}
+
+impl Default for GameConfig {
+    fn default() -> Self {
+        Self {
+            score_row1: 50,
+            score_row2: 15,
+            score_row3: 30,
+            score_row4: 50,
+        }
+    }
+}
+
+
 #[derive(Debug, Default)]
 pub struct App {
+    // прочие параметры игры
+    pub config: GameConfig,
     // проигрыш
     pub game_over: bool,
     // идет ли игра
@@ -46,7 +68,7 @@ pub struct App {
     // поворот фигуры
     pub turn: i8,
     // очки
-    pub glasses: u32,
+    pub score: u32,
 }
 
 impl App {

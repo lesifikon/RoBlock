@@ -13,7 +13,7 @@ impl App {
                 }
             }
             if glas {
-                self.give_glasses(number.len());
+                self.give_score(number.len());
             }
             glas = false;
             loop {
@@ -30,19 +30,19 @@ impl App {
         }
     }
 
-    pub fn give_glasses(&mut self, number_row: usize) {
-        let mut glasses = 0;
-        
+    pub fn give_score(&mut self, number_row: usize) {
+        let mut score = 0;
+
         for i in 0..number_row {
             match i {
-                0 => glasses = glasses + 150,
-                1 => glasses =glasses * 3,
-                2 => glasses = glasses * 6,
-                3 => glasses = glasses * 10,
+                0 => score = score + self.config.score_row1,
+                1 => score = (score + self.config.score_row2) * 2,
+                2 => score = (score + self.config.score_row3) * 3,
+                3 => score = (score + self.config.score_row4) * 5,
                 _ => (),
             };
         }
 
-        self.glasses = self.glasses + glasses;
+        self.score = self.score + score;
     }
 }

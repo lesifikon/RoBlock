@@ -13,14 +13,19 @@ impl App {
     pub fn loss(&mut self) {
         self.game_over = true;
         self.falling = true;
+        self.config.shop = true;
+        self.game = true;
     }
 
     pub fn lox(&mut self) {
+        let mut loss = false;
         for [x, y] in self.fall_block.iter() {
             if self.matrix[*x as usize][*y as usize] > 0 {
-                self.game_over = true;
-                self.falling = true;
+                loss = true;
             }
+        }
+        if loss {
+            self.loss();
         }
     }
 

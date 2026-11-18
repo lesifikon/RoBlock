@@ -11,7 +11,7 @@ use crate::app::App;
 pub fn render(app: &mut App, frame: &mut Frame) {
     let chunks_horizontal = Layout::default()
         .direction(Direction::Horizontal)
-        .vertical_margin(3) // 3
+        // .vertical_margin(3) // 3
         .constraints([
             Constraint::Fill(1),
             Constraint::Length(54),
@@ -32,51 +32,56 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let title_block1 = create_block(" Next block ");
     let title_block2 = create_block("");
 
-    // let mut my_grid = [[0; 10]; 20];
-    let colors = [Color::Red, Color::Green, Color::Blue, Color::Yellow, Color::Magenta];
+    // let colors = [Color::Red, Color::Green, Color::Blue, Color::Yellow, Color::Magenta];
 
 
-    let col = Layout::default()
-        .direction(Direction::Horizontal)
-        .margin(2)
-        // .vertical_margin(5)
-        .constraints([
-            Constraint::Length(5); 10
-        ])
-        .split(chunks_horizontal[1]);
+    if !app.falling {
 
-    // let tteexxtt = title_text(title_block2.clone(), "");
+        let col = Layout::default()
+            .direction(Direction::Horizontal)
+            .margin(2)
+            // .vertical_margin(5)
+            .constraints([
+                Constraint::Length(5); 10
+            ])
+            .split(chunks_horizontal[1]);
 
-    // println!("{}",app.fall_block[2][0]);
+        // let tteexxtt = title_text(title_block2.clone(), "");
 
-    for (col_idx, col_rect) in col.iter().enumerate() {
-    let row = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Length(2); 20])
-        .split(*col_rect);
+        // println!("{}",app.fall_block[2][0]);
 
-    for (row_idx, row_rect) in row.iter().enumerate() {
-        let color = colors[(row_idx + col_idx) % colors.len()];
-        // let color = match app.matrix[row_idx][col_idx] {
-        //         1 => { Color::Red },
-        //         2 => { Color::Blue },
-        //         3 => { Color::Green },
-        //         4 => { Color::Cyan },
-        //         5 => { Color::Yellow},
-        //         6 => { Color::White },
-        //         7 => { Color::Magenta },
-        //         _ => { Color::Black },
-        //     };
-        let block;
+        for (col_idx, col_rect) in col.iter().enumerate() {
+            let row = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Length(2); 20])
+                .split(*col_rect);
 
-        if app.matrix[row_idx][col_idx] == 0 {
-            block = Block::default().style(Style::default().bg(color));
-        } else {
-            block = Block::default().style(Style::default());
+            for (row_idx, row_rect) in row.iter().enumerate() {
+                // let color = colors[(row_idx + col_idx) % colors.len()];
+                let color = match app.matrix[row_idx][col_idx] {
+                        1 => { Color::Red },
+                        2 => { Color::Blue },
+                        3 => { Color::Green },
+                        4 => { Color::Cyan },
+                        5 => { Color::Yellow},
+                        6 => { Color::White },
+                        7 => { Color::Magenta },
+                        _ => { Color::Black },
+                    };
+                let block;
+
+                if app.matrix[row_idx][col_idx] > 0 {
+                    block = Block::default().style(Style::default().bg(color));
+                } else {
+                    block = Block::default().style(Style::default());
+                }
+                frame.render_widget(block, *row_rect);
+            }
         }
-        frame.render_widget(block, *row_rect);
+    } else {
+        let shop_text = title_text(title_block.clone(), "люблю тебя роберта");
+        frame.render_widget(shop_text, chunks_horizontal[1]);
     }
-}
     let meni_title = title_text(title_block, "");
     let text = title_text(title_block1, app.score.to_string());
     let textt = title_text(title_block2, "выфвфыв");

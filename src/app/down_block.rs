@@ -8,13 +8,13 @@ use ratatui::DefaultTerminal;
 
 pub fn falling_block(mut app: &mut App, terminal: &mut DefaultTerminal) -> Result<(), Box<dyn std::error::Error>> {
     let mut last_tick = Instant::now();
-    let tick_rate = Duration::from_millis(1000);
+    let tick_rate = Duration::from_millis(app.config.speed);
     while !app.falling {
         terminal.draw(|f| render(&mut app, f))?;
 
         app.erase_fall_block();
 
-        if event::poll(Duration::from_millis(500))? {
+        if event::poll(Duration::from_millis(50))? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Esc => {
@@ -35,7 +35,7 @@ pub fn falling_block(mut app: &mut App, terminal: &mut DefaultTerminal) -> Resul
             }
         }
 
-        // падает блок через каждые 500мс
+        // падает блок по времени
         if last_tick.elapsed() >= tick_rate {
             app.down();
             last_tick = Instant::now();

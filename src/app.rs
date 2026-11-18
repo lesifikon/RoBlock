@@ -5,20 +5,31 @@ use ratatui::DefaultTerminal;
 mod spawn_block;
 mod down_block;
 mod after_fall;
+mod shop;
 
 pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     let mut app = App::new();
 
     while !app.game_over {
 
-        // блок появляеться
-        spawn_block::run(&mut app);
+        while !app.game {
+            // блок появляеться
+            spawn_block::run(&mut app);
 
-        // блок падает 
-        let _ = down_block::falling_block(&mut app, terminal);
+            // блок падает
+            let _ = down_block::falling_block(&mut app, terminal);
 
-        // проверка после падения
-        app.full_row();
+            // проверка после падения
+            let _ = after_fall::handlet_fall(&mut app);
+        }
+
+        // увеличивает корость падения блоков посе раунда
+        app.config.speed -= 50;
+
+        // магазин
+        let _ = shop::shop(&mut app, terminal);
+
+
 
     }
     Ok(())
@@ -26,19 +37,39 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
 
 #[derive(Debug, Clone)]
 pub struct GameConfig {
+    pub shop: bool,
+    // нужное количество очков
+    pub score_end: u32,
+    // скорость падения блоков
+    pub speed: u64,
+
     pub score_row1: u32,
     pub score_row2: u32,
     pub score_row3: u32,
     pub score_row4: u32,
+
+    pub score_factor_row2: u32,
+    pub score_factor_row3: u32,
+    pub score_factor_row4: u32,
 }
 
 impl Default for GameConfig {
     fn default() -> Self {
         Self {
+            shop: false,
+
+            score_end: 100,
+
+            speed: 1000,
+
             score_row1: 50,
             score_row2: 15,
             score_row3: 30,
             score_row4: 50,
+
+            score_factor_row2: 2,
+            score_factor_row3: 3,
+            score_factor_row4: 5,
         }
     }
 }
@@ -50,6 +81,8 @@ pub struct App {
     pub config: GameConfig,
     // проигрыш
     pub game_over: bool,
+    // игра
+    pub game: bool,
     // идет ли игра
     pub falling: bool,
     // карта

@@ -1,5 +1,10 @@
 use super::App;
 
+pub fn handlet_fall(app: &mut App) {
+    app.full_row();
+    app.dialed_score();
+}
+
 impl App {
     // очки
     pub fn full_row(&mut self) {
@@ -36,13 +41,20 @@ impl App {
         for i in 0..number_row {
             match i {
                 0 => score = score + self.config.score_row1,
-                1 => score = (score + self.config.score_row2) * 2,
-                2 => score = (score + self.config.score_row3) * 3,
-                3 => score = (score + self.config.score_row4) * 5,
+                1 => score = (score + self.config.score_row2) * self.config.score_factor_row2,
+                2 => score = (score + self.config.score_row3) * self.config.score_factor_row3,
+                3 => score = (score + self.config.score_row4) * self.config.score_factor_row4,
                 _ => (),
             };
         }
 
         self.score = self.score + score;
+    }
+
+    pub fn dialed_score(&mut self) {
+        if self.score >= self.config.score_end {
+            self.game = true;
+            self.config.score_end += 2000
+        }
     }
 }

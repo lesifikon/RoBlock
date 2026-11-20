@@ -21,6 +21,8 @@ pub fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
 
             // проверка после падения
             let _ = after_fall::handlet_fall(&mut app);
+            // увеличивает корость падения блоков посе раунда
+            app.config.speed -= 5;
         }
 
         // увеличивает корость падения блоков посе раунда
